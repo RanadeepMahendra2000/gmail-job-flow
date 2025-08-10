@@ -1,14 +1,46 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useEffect } from "react";
+import { Dashboard } from "@/components/Dashboard";
+import { AuthPage } from "@/components/AuthPage";
 
 const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate checking authentication status
+    const checkAuth = () => {
+      const hasAuth = localStorage.getItem("job-tracker-auth");
+      setIsAuthenticated(!!hasAuth);
+      setIsLoading(false);
+    };
+
+    // Simulate network delay
+    setTimeout(checkAuth, 500);
+  }, []);
+
+  // Simulate login success
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const hasAuth = localStorage.getItem("job-tracker-auth");
+      setIsAuthenticated(!!hasAuth);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return isAuthenticated ? <Dashboard /> : <AuthPage />;
 };
 
 export default Index;
