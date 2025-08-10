@@ -1,8 +1,8 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Application } from "./Dashboard";
+import { LegacyApplication } from "@/types/application";
 
 interface TimelineChartProps {
-  applications: Application[];
+  applications: LegacyApplication[];
 }
 
 export const TimelineChart = ({ applications }: TimelineChartProps) => {

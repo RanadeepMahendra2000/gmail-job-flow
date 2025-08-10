@@ -1,35 +1,11 @@
-import { useState, useEffect } from "react";
 import { Dashboard } from "@/components/Dashboard";
 import { AuthPage } from "@/components/AuthPage";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    // Simulate checking authentication status
-    const checkAuth = () => {
-      const hasAuth = localStorage.getItem("job-tracker-auth");
-      setIsAuthenticated(!!hasAuth);
-      setIsLoading(false);
-    };
-
-    // Simulate network delay
-    setTimeout(checkAuth, 500);
-  }, []);
-
-  // Simulate login success
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const hasAuth = localStorage.getItem("job-tracker-auth");
-      setIsAuthenticated(!!hasAuth);
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
-
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -40,7 +16,7 @@ const Index = () => {
     );
   }
 
-  return isAuthenticated ? <Dashboard /> : <AuthPage />;
+  return user ? <Dashboard /> : <AuthPage />;
 };
 
 export default Index;

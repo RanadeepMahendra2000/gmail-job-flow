@@ -2,10 +2,10 @@ import { AlertTriangle, Clock, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Application } from "./Dashboard";
+import { LegacyApplication } from "@/types/application";
 
 interface DeadlineAlertsProps {
-  applications: Application[];
+  applications: LegacyApplication[];
 }
 
 export const DeadlineAlerts = ({ applications }: DeadlineAlertsProps) => {

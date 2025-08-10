@@ -6,18 +6,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Application } from "./Dashboard";
+import { LegacyApplication } from "@/types/application";
 
 interface ApplicationsTableProps {
-  applications: Application[];
-  onUpdate: (applications: Application[]) => void;
+  applications: LegacyApplication[];
+  onUpdate: (applications: LegacyApplication[]) => void;
 }
 
 export const ApplicationsTable = ({ applications, onUpdate }: ApplicationsTableProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Application>>({});
+  const [editForm, setEditForm] = useState<Partial<LegacyApplication>>({});
 
-  const getStatusColor = (status: Application["status"]) => {
+  const getStatusColor = (status: LegacyApplication["status"]) => {
     switch (status) {
       case "PENDING":
         return "bg-warning-muted text-warning-foreground border-warning/20";
@@ -34,7 +34,7 @@ export const ApplicationsTable = ({ applications, onUpdate }: ApplicationsTableP
     }
   };
 
-  const handleEdit = (application: Application) => {
+  const handleEdit = (application: LegacyApplication) => {
     setEditingId(application.id);
     setEditForm({
       company: application.company,
@@ -136,7 +136,7 @@ export const ApplicationsTable = ({ applications, onUpdate }: ApplicationsTableP
                 {editingId === application.id ? (
                   <Select
                     value={editForm.status}
-                    onValueChange={(value) => setEditForm({ ...editForm, status: value as Application["status"] })}
+                    onValueChange={(value) => setEditForm({ ...editForm, status: value as LegacyApplication["status"] })}
                   >
                     <SelectTrigger className="h-8 w-32">
                       <SelectValue />

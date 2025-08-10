@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Calendar, Filter, Mail, Plus, RefreshCw, Search, User } from "lucide-react";
+import { Bell, Calendar, Filter, LogOut, Mail, Plus, RefreshCw, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,88 +9,63 @@ import { TimelineChart } from "./TimelineChart";
 import { AnalyticsCards } from "./AnalyticsCards";
 import { DeadlineAlerts } from "./DeadlineAlerts";
 import { FilterPanel } from "./FilterPanel";
+import { useApplications } from "@/hooks/useApplications";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { Application, LegacyApplication } from "@/types/application";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-export interface Application {
-  id: string;
-  company: string;
-  role: string;
-  status: "PENDING" | "REJECTED" | "ASSESSMENT" | "INTERVIEW" | "OFFER";
-  applicationDate: Date;
-  deadline?: Date;
-  source: "gmail" | "manual";
-  gmailMessageId?: string;
-}
+// Legacy interface mapping for existing components
 
-// Mock data for the MVP
-const mockApplications: Application[] = [
-  {
-    id: "1",
-    company: "Google",
-    role: "Senior Software Engineer",
-    status: "INTERVIEW",
-    applicationDate: new Date("2024-01-15"),
-    deadline: new Date("2024-02-01"),
-    source: "gmail",
-    gmailMessageId: "msg1"
-  },
-  {
-    id: "2",
-    company: "Meta",
-    role: "Product Manager",
-    status: "PENDING",
-    applicationDate: new Date("2024-01-20"),
-    source: "gmail",
-    gmailMessageId: "msg2"
-  },
-  {
-    id: "3",
-    company: "Amazon",
-    role: "Frontend Developer",
-    status: "ASSESSMENT",
-    applicationDate: new Date("2024-01-25"),
-    deadline: new Date("2024-01-30"),
-    source: "manual"
-  },
-  {
-    id: "4",
-    company: "Netflix",
-    role: "Data Scientist",
-    status: "REJECTED",
-    applicationDate: new Date("2024-01-10"),
-    source: "gmail",
-    gmailMessageId: "msg4"
-  },
-  {
-    id: "5",
-    company: "Apple",
-    role: "iOS Developer",
-    status: "OFFER",
-    applicationDate: new Date("2024-01-05"),
-    source: "gmail",
-    gmailMessageId: "msg5"
+// Map new application format to legacy format for existing components
+const mapToLegacyFormat = (app: Application): LegacyApplication => ({
+  id: app.id,
+  company: app.company,
+  role: app.role || 'Unknown Role',
+  status: mapStatus(app.status),
+  applicationDate: app.applied_at ? new Date(app.applied_at) : new Date(app.created_at),
+  deadline: undefined, // TODO: Add deadline support
+  source: app.source,
+  gmailMessageId: app.email_id || undefined
+});
+
+const mapStatus = (status: Application['status']): LegacyApplication['status'] => {
+  switch (status) {
+    case 'applied': return 'PENDING';
+    case 'assessment': return 'ASSESSMENT';
+    case 'interview': return 'INTERVIEW';
+    case 'offer': return 'OFFER';
+    case 'rejected': return 'REJECTED';
+    default: return 'PENDING';
   }
-];
+};
 
 export const Dashboard = () => {
-  const [applications, setApplications] = useState<Application[]>(mockApplications);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const { applications, loading, syncing, syncGmail } = useApplications();
+  const { signOut } = useAuth();
+  const { profile } = useProfile();
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    // Simulate Gmail sync
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 2000);
+  const handleLogout = async () => {
+    await signOut();
   };
 
-  const filteredApplications = applications.filter(app => {
+  // Map to legacy format and filter
+  const legacyApplications = applications.map(mapToLegacyFormat);
+  const filteredApplications = legacyApplications.filter(app => {
     const matchesSearch = 
       app.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.role.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "ALL" || app.status === statusFilter;
+    const matchesStatus = statusFilter === "ALL" || mapStatus(applications.find(a => a.id === app.id)?.status || 'applied') === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -112,14 +87,14 @@ export const Dashboard = () => {
             
             <div className="flex items-center gap-3">
               <Button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
+                onClick={syncGmail}
+                disabled={syncing || loading}
                 variant="outline"
                 size="sm"
                 className="gap-2"
               >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                Sync Gmail
+                <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+                {syncing ? 'Syncing...' : 'Sync Gmail'}
               </Button>
               
               <Button size="sm" className="gap-2">
@@ -127,9 +102,34 @@ export const Dashboard = () => {
                 Add Manual
               </Button>
               
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-4 w-4 text-primary" />
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+                    {profile?.avatar_url ? (
+                      <img 
+                        src={profile.avatar_url} 
+                        alt="Profile" 
+                        className="h-8 w-8 rounded-full"
+                      />
+                    ) : (
+                      <User className="h-4 w-4" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{profile?.full_name || 'User'}</p>
+                      <p className="text-xs text-muted-foreground">{profile?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="gap-2">
+                    <LogOut className="h-4 w-4" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -137,10 +137,10 @@ export const Dashboard = () => {
 
       <div className="container mx-auto px-6 py-6 space-y-6">
         {/* Analytics Cards */}
-        <AnalyticsCards applications={applications} />
+        <AnalyticsCards applications={legacyApplications} />
 
         {/* Deadline Alerts */}
-        <DeadlineAlerts applications={applications} />
+        <DeadlineAlerts applications={legacyApplications} />
 
         {/* Search and Filters */}
         <Card>
@@ -188,7 +188,7 @@ export const Dashboard = () => {
             {showFilters && <FilterPanel />}
             <ApplicationsTable 
               applications={filteredApplications}
-              onUpdate={setApplications}
+              onUpdate={() => {}} // TODO: Implement real update handler
             />
           </CardContent>
         </Card>
@@ -203,7 +203,7 @@ export const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <TimelineChart applications={applications} />
+              <TimelineChart applications={legacyApplications} />
             </CardContent>
           </Card>
 
@@ -216,7 +216,7 @@ export const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {applications
+                {legacyApplications
                   .filter(app => app.deadline && app.deadline > new Date())
                   .sort((a, b) => (a.deadline?.getTime() || 0) - (b.deadline?.getTime() || 0))
                   .slice(0, 5)

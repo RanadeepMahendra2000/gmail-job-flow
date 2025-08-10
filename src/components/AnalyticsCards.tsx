@@ -1,9 +1,9 @@
 import { TrendingUp, Users, Calendar, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Application } from "./Dashboard";
+import { LegacyApplication } from "@/types/application";
 
 interface AnalyticsCardsProps {
-  applications: Application[];
+  applications: LegacyApplication[];
 }
 
 export const AnalyticsCards = ({ applications }: AnalyticsCardsProps) => {

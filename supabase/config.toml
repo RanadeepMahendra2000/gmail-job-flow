@@ -1,1 +1,7 @@
 project_id = "nfvedsxsqyciemqmtzam"
+
+[functions.gmail-sync]
+verify_jwt = true
+
+[functions.gmail-classify]
+verify_jwt = true

@@ -1,14 +1,30 @@
 import { Mail, Shield, Zap, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 export const AuthPage = () => {
-  const handleGoogleLogin = () => {
-    // This would integrate with Google OAuth
-    console.log("Initiating Google OAuth flow...");
-    // For demo purposes, simulate successful login
-    localStorage.setItem("job-tracker-auth", "demo-token");
-    window.location.reload();
+  const { signInWithGoogle } = useAuth();
+  const { toast } = useToast();
+
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        toast({
+          title: "Authentication failed",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Authentication failed",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+    }
   };
 
   const features = [
