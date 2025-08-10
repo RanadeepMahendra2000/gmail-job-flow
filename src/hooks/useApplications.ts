@@ -11,7 +11,7 @@ export function useApplications() {
 
   const fetchApplications = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('applications')
         .select('*')
         .order('applied_at', { ascending: false, nullsFirst: false })
@@ -76,7 +76,7 @@ export function useApplications() {
 
   const updateApplication = async (id: string, updates: Partial<Application>) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('applications')
         .update(updates)
         .eq('id', id);
@@ -104,7 +104,7 @@ export function useApplications() {
 
   const deleteApplication = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('applications')
         .delete()
         .eq('id', id);
