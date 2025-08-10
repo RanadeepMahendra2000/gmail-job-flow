@@ -14,7 +14,120 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          applied_at: string | null
+          company: string
+          created_at: string | null
+          email_id: string | null
+          id: string
+          job_post_url: string | null
+          location: string | null
+          metadata: Json | null
+          role: string | null
+          snippet: string | null
+          source: string | null
+          status: Database["public"]["Enums"]["application_status"] | null
+          thread_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          company: string
+          created_at?: string | null
+          email_id?: string | null
+          id?: string
+          job_post_url?: string | null
+          location?: string | null
+          metadata?: Json | null
+          role?: string | null
+          snippet?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["application_status"] | null
+          thread_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          company?: string
+          created_at?: string | null
+          email_id?: string | null
+          id?: string
+          job_post_url?: string | null
+          location?: string | null
+          metadata?: Json | null
+          role?: string | null
+          snippet?: string | null
+          source?: string | null
+          status?: Database["public"]["Enums"]["application_status"] | null
+          thread_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string
+          full_name: string | null
+          google_provider_id: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          google_provider_id?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          google_provider_id?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sync_logs: {
+        Row: {
+          error: string | null
+          finished_at: string | null
+          id: string
+          started_at: string
+          stats: Json | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+          stats?: Json | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+          stats?: Json | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +136,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      application_status:
+        | "applied"
+        | "assessment"
+        | "interview"
+        | "offer"
+        | "rejected"
+        | "ghosted"
+        | "withdrawn"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +271,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      application_status: [
+        "applied",
+        "assessment",
+        "interview",
+        "offer",
+        "rejected",
+        "ghosted",
+        "withdrawn",
+        "other",
+      ],
+    },
   },
 } as const
